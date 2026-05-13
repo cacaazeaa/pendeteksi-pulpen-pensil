@@ -14,7 +14,7 @@ const CONFIG = {
     threshold: 0.5,
     
     // Batas untuk menghapus kotak deteksi yang menumpuk (Biarkan saja 0.4)
-    iouThreshold: 0.7
+    iouThreshold: 0.98
 };
 
 // ======================================================================
