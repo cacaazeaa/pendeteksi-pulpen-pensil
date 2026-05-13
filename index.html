@@ -2,13 +2,24 @@
 <html lang="id">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>AI Deteksi Pulpen & Pensil</title>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>
+        AI Deteksi Pulpen & Pensil
+    </title>
 
     <!-- ONNX Runtime -->
     <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+
+    <!-- FONT -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 
     <style>
 
@@ -19,156 +30,277 @@
         }
 
         body{
-            background:linear-gradient(135deg,#0f172a,#1e293b);
-            color:white;
-            font-family:Arial, Helvetica, sans-serif;
+
+            font-family:'Poppins',sans-serif;
+
             min-height:100vh;
+
             display:flex;
+
             justify-content:center;
+
             align-items:center;
+
+            background:
+            linear-gradient(
+                135deg,
+                #0f172a,
+                #1e293b,
+                #0f172a
+            );
+
+            overflow:hidden;
+
             padding:20px;
         }
 
-        .main{
-            width:100%;
-            max-width:750px;
+        .background-glow{
+
+            position:absolute;
+
+            width:500px;
+            height:500px;
+
+            background:#2563eb;
+
+            border-radius:50%;
+
+            filter:blur(120px);
+
+            opacity:0.2;
+
+            top:-150px;
+            right:-150px;
+        }
+
+        .background-glow2{
+
+            position:absolute;
+
+            width:400px;
+            height:400px;
+
+            background:#06b6d4;
+
+            border-radius:50%;
+
+            filter:blur(120px);
+
+            opacity:0.2;
+
+            bottom:-120px;
+            left:-120px;
+        }
+
+        .card{
+
+            position:relative;
+
+            width:720px;
+
+            background:rgba(15,23,42,0.75);
+
+            backdrop-filter:blur(14px);
+
+            border:1px solid rgba(255,255,255,0.1);
+
+            border-radius:28px;
+
+            padding:30px;
+
+            box-shadow:
+            0 20px 50px rgba(0,0,0,0.45);
+
             text-align:center;
+
+            z-index:10;
         }
 
         .title{
-            font-size:2.3rem;
-            font-weight:bold;
+
+            font-size:2.4rem;
+
+            font-weight:700;
+
+            color:white;
+
             margin-bottom:10px;
         }
 
         .subtitle{
+
             color:#cbd5e1;
+
             margin-bottom:25px;
+
+            font-size:1rem;
         }
 
-        .container{
+        .camera-box{
+
             position:relative;
+
             width:640px;
             height:480px;
+
             margin:auto;
-            border-radius:20px;
+
+            border-radius:22px;
+
             overflow:hidden;
-            border:3px solid #334155;
+
+            border:3px solid rgba(255,255,255,0.12);
+
             background:black;
-            box-shadow:0 0 30px rgba(0,0,0,0.5);
+
+            box-shadow:
+            0 10px 30px rgba(0,0,0,0.5);
         }
 
         video,
-        canvas#overlay{
+        canvas{
+
             position:absolute;
+
             top:0;
             left:0;
-            width:640px;
-            height:480px;
-        }
 
-        video{
+            width:100%;
+            height:100%;
+
             object-fit:cover;
-            background:black;
         }
 
-        canvas#overlay{
-            z-index:10;
+        canvas{
+            z-index:2;
             pointer-events:none;
         }
 
-        #status{
-            margin:20px auto;
-            padding:15px;
-            width:640px;
-            border-radius:12px;
-            background:#111827;
-            border:1px solid #334155;
-            font-weight:bold;
-            color:#38bdf8;
+        .controls{
+
+            margin-top:25px;
         }
 
-        .btn-start{
-            padding:14px 35px;
-            font-size:1rem;
+        #btn-init{
+
+            padding:15px 35px;
+
             border:none;
-            border-radius:12px;
-            background:linear-gradient(90deg,#2563eb,#06b6d4);
-            color:white;
+
+            border-radius:14px;
+
+            font-size:1rem;
+
+            font-weight:600;
+
             cursor:pointer;
-            font-weight:bold;
+
+            color:white;
+
+            background:
+            linear-gradient(
+                90deg,
+                #2563eb,
+                #06b6d4
+            );
+
             transition:0.3s;
-            margin-bottom:20px;
+
+            box-shadow:
+            0 10px 25px rgba(37,99,235,0.4);
         }
 
-        .btn-start:hover{
-            transform:scale(1.05);
+        #btn-init:hover{
+
+            transform:translateY(-3px) scale(1.03);
+
+            box-shadow:
+            0 15px 35px rgba(37,99,235,0.55);
+        }
+
+        #status{
+
+            margin-top:20px;
+
+            padding:14px;
+
+            border-radius:14px;
+
+            background:rgba(255,255,255,0.06);
+
+            color:#38bdf8;
+
+            font-weight:500;
+
+            border:1px solid rgba(255,255,255,0.08);
         }
 
         .footer{
+
             margin-top:20px;
+
             color:#94a3b8;
+
             font-size:0.9rem;
         }
 
-        @media(max-width:700px){
+        @media(max-width:800px){
 
-            .container,
-            #status{
+            .card{
                 width:100%;
+                padding:20px;
             }
 
-            .container{
+            .camera-box{
+                width:100%;
                 height:auto;
                 aspect-ratio:4/3;
             }
 
-            video,
-            canvas#overlay{
-                width:100%;
-                height:100%;
+            .title{
+                font-size:1.8rem;
             }
         }
 
     </style>
+
 </head>
 
 <body>
 
-    <div class="main">
+    <!-- EFFECT -->
+    <div class="background-glow"></div>
+    <div class="background-glow2"></div>
 
-        <!-- JUDUL -->
+    <!-- CARD -->
+    <div class="card">
+
+        <!-- TITLE -->
         <div class="title">
             ✏️ AI Deteksi Pulpen & Pensil
         </div>
 
-        <!-- PEMBUAT -->
+        <!-- SUBTITLE -->
         <div class="subtitle">
-            Dibuat oleh <b>CACA & ZHESEA</b>
+            Sistem Object Detection menggunakan
+            YOLO + ONNX Runtime Web
+            <br>
+            Dibuat oleh
+            <b>CACA & ZHESEA</b>
         </div>
 
-        <!-- TOMBOL -->
-        <button id="btn-init" class="btn-start">
-            AKTIFKAN AI
-        </button>
+        <!-- CAMERA -->
+        <div class="camera-box">
 
-        <!-- STATUS -->
-        <div id="status">
-            STATUS : MENUNGGU AKTIVASI
-        </div>
-
-        <!-- KAMERA -->
-        <div class="container">
-
-            <!-- VIDEO KAMERA -->
+            <!-- VIDEO -->
             <video
                 id="webcam"
                 autoplay
-                playsinline
-                muted>
+                muted
+                playsinline>
             </video>
 
-            <!-- HASIL DETEKSI -->
+            <!-- OVERLAY -->
             <canvas
                 id="overlay"
                 width="640"
@@ -177,7 +309,20 @@
 
         </div>
 
-        <!-- PROCESSOR -->
+        <!-- BUTTON -->
+        <div class="controls">
+
+            <button id="btn-init">
+                AKTIFKAN AI
+            </button>
+
+            <div id="status">
+                STATUS : MENUNGGU AKTIVASI
+            </div>
+
+        </div>
+
+        <!-- HIDDEN PROCESSOR -->
         <canvas
             id="processor"
             width="640"
@@ -187,12 +332,12 @@
 
         <!-- FOOTER -->
         <div class="footer">
-            YOLO Object Detection • ONNX Runtime Web
+            Real-Time AI Detection • Browser Based
         </div>
 
     </div>
 
-    <!-- FILE AI -->
+    <!-- JAVASCRIPT -->
     <script src="app.js"></script>
 
 </body>
