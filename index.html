@@ -1,40 +1,199 @@
-// ======================================================================
-// MENYALAKAN KAMERA
-// ======================================================================
-async function startCamera() {
+<!DOCTYPE html>
+<html lang="id">
 
-    try {
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        // Meminta akses kamera
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: false
-        });
+    <title>AI Deteksi Pulpen & Pensil</title>
 
-        // Menampilkan kamera ke video
-        video.srcObject = stream;
+    <!-- ONNX Runtime -->
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
 
-        video.onloadedmetadata = () => {
+    <style>
 
-            video.play();
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
 
-            status.innerText =
-                "AI AKTIF : Kamera berhasil dinyalakan";
+        body{
+            background:linear-gradient(135deg,#0f172a,#1e293b);
+            color:white;
+            font-family:Arial, Helvetica, sans-serif;
+            min-height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:20px;
+        }
 
-            initBtn.style.display = "none";
+        .main{
+            width:100%;
+            max-width:750px;
+            text-align:center;
+        }
 
-            requestAnimationFrame(processFrame);
-        };
+        .title{
+            font-size:2.3rem;
+            font-weight:bold;
+            margin-bottom:10px;
+        }
 
-    } catch (error) {
+        .subtitle{
+            color:#cbd5e1;
+            margin-bottom:25px;
+        }
 
-        console.error(error);
+        .container{
+            position:relative;
+            width:640px;
+            height:480px;
+            margin:auto;
+            border-radius:20px;
+            overflow:hidden;
+            border:3px solid #334155;
+            background:black;
+            box-shadow:0 0 30px rgba(0,0,0,0.5);
+        }
 
-        status.innerText =
-            "GAGAL: Kamera tidak diizinkan atau tidak tersedia";
+        video,
+        canvas#overlay{
+            position:absolute;
+            top:0;
+            left:0;
+            width:640px;
+            height:480px;
+        }
 
-        alert(
-            "Izinkan akses kamera terlebih dahulu!"
-        );
-    }
-}
+        video{
+            object-fit:cover;
+            background:black;
+        }
+
+        canvas#overlay{
+            z-index:10;
+            pointer-events:none;
+        }
+
+        #status{
+            margin:20px auto;
+            padding:15px;
+            width:640px;
+            border-radius:12px;
+            background:#111827;
+            border:1px solid #334155;
+            font-weight:bold;
+            color:#38bdf8;
+        }
+
+        .btn-start{
+            padding:14px 35px;
+            font-size:1rem;
+            border:none;
+            border-radius:12px;
+            background:linear-gradient(90deg,#2563eb,#06b6d4);
+            color:white;
+            cursor:pointer;
+            font-weight:bold;
+            transition:0.3s;
+            margin-bottom:20px;
+        }
+
+        .btn-start:hover{
+            transform:scale(1.05);
+        }
+
+        .footer{
+            margin-top:20px;
+            color:#94a3b8;
+            font-size:0.9rem;
+        }
+
+        @media(max-width:700px){
+
+            .container,
+            #status{
+                width:100%;
+            }
+
+            .container{
+                height:auto;
+                aspect-ratio:4/3;
+            }
+
+            video,
+            canvas#overlay{
+                width:100%;
+                height:100%;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="main">
+
+        <!-- JUDUL -->
+        <div class="title">
+            ✏️ AI Deteksi Pulpen & Pensil
+        </div>
+
+        <!-- PEMBUAT -->
+        <div class="subtitle">
+            Dibuat oleh <b>CACA & ZHESEA</b>
+        </div>
+
+        <!-- TOMBOL -->
+        <button id="btn-init" class="btn-start">
+            AKTIFKAN AI
+        </button>
+
+        <!-- STATUS -->
+        <div id="status">
+            STATUS : MENUNGGU AKTIVASI
+        </div>
+
+        <!-- KAMERA -->
+        <div class="container">
+
+            <!-- VIDEO KAMERA -->
+            <video
+                id="webcam"
+                autoplay
+                playsinline
+                muted>
+            </video>
+
+            <!-- HASIL DETEKSI -->
+            <canvas
+                id="overlay"
+                width="640"
+                height="480">
+            </canvas>
+
+        </div>
+
+        <!-- PROCESSOR -->
+        <canvas
+            id="processor"
+            width="640"
+            height="640"
+            style="display:none;">
+        </canvas>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            YOLO Object Detection • ONNX Runtime Web
+        </div>
+
+    </div>
+
+    <!-- FILE AI -->
+    <script src="app.js"></script>
+
+</body>
+</html>
