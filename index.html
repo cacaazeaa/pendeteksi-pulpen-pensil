@@ -1,43 +1,187 @@
+```html id="0mkn7j"
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deployment AI Siswa</title>
-    
-    <!-- Memuat mesin AI (ONNX Runtime Web) agar model bisa berjalan langsung di browser[cite: 2] -->
+
+    <title>AI Deteksi Pulpen & Pensil</title>
+
+    <!-- ONNX Runtime -->
     <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
-    
+
     <style>
-        body { background-color: #121212; color: white; font-family: 'Courier New', Courier, monospace; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .container { position: relative; width: 640px; height: 480px; border: 2px solid #555; border-radius: 10px; overflow: hidden; }
-        video, canvas#overlay { position: absolute; top: 0; left: 0; width: 640px; height: 480px; }
-        canvas#overlay { z-index: 10; pointer-events: none; }
-        #status { margin: 15px; padding: 10px; border-radius: 5px; background: #1e1e1e; border: 1px solid #444; width: 600px; text-align: center; }
-        .btn-start { padding: 12px 30px; font-size: 1.1rem; cursor: pointer; background: #FF3B30; color: white; border: none; border-radius: 5px; font-weight: bold; }
-        .btn-start:hover { background: #cc2f26; }
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            background: linear-gradient(135deg,#0f172a,#1e293b);
+            color:white;
+            font-family:Arial, Helvetica, sans-serif;
+            min-height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:20px;
+        }
+
+        .main{
+            width:100%;
+            max-width:750px;
+            text-align:center;
+        }
+
+        .title{
+            font-size:2.2rem;
+            font-weight:bold;
+            margin-bottom:10px;
+        }
+
+        .subtitle{
+            color:#cbd5e1;
+            margin-bottom:25px;
+            font-size:1rem;
+        }
+
+        .container{
+            position:relative;
+            width:640px;
+            height:480px;
+            margin:auto;
+            border-radius:20px;
+            overflow:hidden;
+            border:3px solid #334155;
+            box-shadow:0 0 25px rgba(0,0,0,0.5);
+            background:black;
+        }
+
+        video,
+        canvas#overlay{
+            position:absolute;
+            top:0;
+            left:0;
+            width:640px;
+            height:480px;
+        }
+
+        canvas#overlay{
+            z-index:10;
+            pointer-events:none;
+        }
+
+        #status{
+            margin:20px auto;
+            padding:15px;
+            width:640px;
+            border-radius:12px;
+            background:#111827;
+            border:1px solid #334155;
+            font-weight:bold;
+            color:#38bdf8;
+            box-shadow:0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .btn-start{
+            padding:14px 35px;
+            font-size:1rem;
+            border:none;
+            border-radius:12px;
+            background:linear-gradient(90deg,#2563eb,#06b6d4);
+            color:white;
+            cursor:pointer;
+            font-weight:bold;
+            transition:0.3s;
+            margin-bottom:20px;
+            box-shadow:0 5px 15px rgba(37,99,235,0.4);
+        }
+
+        .btn-start:hover{
+            transform:scale(1.05);
+            background:linear-gradient(90deg,#1d4ed8,#0891b2);
+        }
+
+        .footer{
+            margin-top:20px;
+            color:#94a3b8;
+            font-size:0.9rem;
+        }
+
+        @media(max-width:700px){
+
+            .container,
+            video,
+            canvas#overlay,
+            #status{
+                width:100%;
+                height:auto;
+            }
+
+            .container{
+                aspect-ratio:4/3;
+            }
+        }
     </style>
 </head>
+
 <body>
 
-    <!-- GANTI BAGIAN INI dengan judul proyek kalian -->
-    <h1>🛡️ Proyek AI: Deteksi Otomatis</h1>
-    <p>Dibuat oleh: [CACA & ZHESEA]</p>
-    
-    <button id="btn-init" class="btn-start">AKTIFKAN KAMERA</button>
-    <div id="status">STATUS: MATI</div>
+    <div class="main">
 
-    <div class="container">
-        <!-- Elemen video untuk menampilkan gambar langsung dari kamera laptop/HP[cite: 2] -->
-        <video id="webcam" playsinline muted></video>
-        <!-- Kanvas transparan untuk menggambar kotak deteksi di atas video kamera[cite: 2] -->
-        <canvas id="overlay" width="640" height="480"></canvas>
+        <!-- JUDUL -->
+        <div class="title">
+            ✏️ AI Deteksi Pulpen & Pensil
+        </div>
+
+        <!-- NAMA -->
+        <div class="subtitle">
+            Dibuat oleh: <b>CACA & ZHESEA</b>
+        </div>
+
+        <!-- TOMBOL -->
+        <button id="btn-init" class="btn-start">
+            AKTIFKAN AI
+        </button>
+
+        <!-- STATUS -->
+        <div id="status">
+            STATUS : SISTEM BELUM AKTIF
+        </div>
+
+        <!-- KAMERA -->
+        <div class="container">
+
+            <video id="webcam" playsinline muted></video>
+
+            <canvas
+                id="overlay"
+                width="640"
+                height="480">
+            </canvas>
+
+        </div>
+
+        <!-- CANVAS PROCESSOR -->
+        <canvas
+            id="processor"
+            width="640"
+            height="640"
+            style="display:none;">
+        </canvas>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            Sistem AI Object Detection menggunakan YOLO + ONNX Runtime
+        </div>
+
     </div>
 
-    <!-- Kanvas tersembunyi yang digunakan sistem untuk menyesuaikan ukuran gambar bagi AI (Jangan dihapus!)[cite: 2] -->
-    <canvas id="processor" width="640" height="640" style="display:none;"></canvas>
-
-    <!-- Memanggil file logika AI kalian -->
+    <!-- FILE JAVASCRIPT -->
     <script src="app.js"></script>
+
 </body>
 </html>
+```
